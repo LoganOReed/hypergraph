@@ -1,5 +1,12 @@
-# Python Project Template
-A python project template that uses tox to run test suites. setup.cfg lists metadata for the package and lists the required packages for the program. It also lists the requirements for the testing environment. 
-Tox.ini creates all of the environments (right now it's just for py38 and testenv). testenv inside of tox.ini tells tox to look in setup.cfg to find dependencies for testing and also gives the command line instruction for testing.
+# TB Hypergraph
+TODO: basic explanation
 
-For more information, see [this link](https://packaging-guide.openastronomy.org/en/latest/index.html)
+## Project Requirements
+The only requirements to run this project is python 3.8 and poetry. Poetry is a package manager so it will do everything else in a virtual environment.
+
+## Running Tests and Formatting Code
+To format the code and run every test on the package, run the following in the cmd line:
+
+```
+tox
+```
