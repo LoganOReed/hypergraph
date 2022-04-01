@@ -10,3 +10,11 @@ To format the code and run every test on the package, run the following in the c
 ```
 tox
 ```
+
+## Running Specific Scripts
+To run specific scripts, for example "file_io.py", run the following:
+
+```
+poetry run python hypergraph/file_io.py
+```
+
