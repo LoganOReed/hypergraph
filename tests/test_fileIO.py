@@ -31,7 +31,12 @@ def test_fileIO():
     path = os.path.join(
         parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
     )
+    # check that pandas opened a file
+    xls = pd.ExcelFile(path)
+    assert(isinstance(xls, pd.ExcelFile))
+
+    # check that it can read in sheets
     for s in sheets:
-        data = pd.read_excel(path, sheet_name=s)
+        data = pd.read_excel(xls, sheet_name=s)
         print(data)
         assert(isinstance(data, pd.DataFrame))
