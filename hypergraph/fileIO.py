@@ -29,3 +29,4 @@ if __name__ == "__main__":
         parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
     )
     print(readXLSX(path))
+    print(path)
