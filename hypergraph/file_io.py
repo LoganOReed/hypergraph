@@ -1,5 +1,4 @@
 import os
-import sys
 import pandas as pd
 
 
@@ -18,7 +17,9 @@ def readXLSX(path):
     out : pd.DataFrame
         A pandas dataframe with the same data as `path`
     """
-    return pd.read_excel(path)
+    # specifying None returns a dictionary where keys are sheet names
+    # and values are dataframes of the corresponding sheet
+    return pd.read_excel(path, None)
 
 
 if __name__ == "__main__":
