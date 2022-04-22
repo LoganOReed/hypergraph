@@ -18,7 +18,7 @@ def readXLSX(path):
     out : pd.ExcelFile
         A pandas ExcelFile with the same data as `path`
     """
-    return pd.ExcelFile(path)
+    return pd.read_excel(path, None)
 
 
 def combineSheets(xls):
@@ -30,15 +30,15 @@ def combineSheets(xls):
 
     Parameters
     ----------
-    xls : pd.ExcelFile
-        A Pandas ExcelFile that stores the sheets we want to combine
+    xls : dictionary
+        A dictionary where keys are sheetnames and values are pd.Dataframes of sheets
 
     Returns
     -------
     combinedSheet : pd.DataFrame
         pandas dataframe that contains the information from every sheet in `xls`
     """
-    sheets = pd.read_excel(xls,sheet_name=None)
+    sheets = xls.values()
     combinedSheet = pd.concat(sheets, axis=1)
     print(combinedSheet)
     return combinedSheet
