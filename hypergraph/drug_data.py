@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from fileIO import readXLSX
+import numpy as np
 import functools
 
 
@@ -17,7 +18,8 @@ class Drug_Data:
         self.average_drug_table = self.create_average_drug_table()
 
         # TODO: ############################
-        self.significance_filters = self.create_significance_filters(self.drug_table)
+        default_sig_level = 1
+        self.significance_filters = self.create_significance_filters(self.drug_table, default_sig_level)
         ##############################
 
     def create_drug_table(self):
@@ -65,12 +67,19 @@ class Drug_Data:
 
         return average_drug_table
 
-    def create_significance_filters(self, drug_dataframe):
+    def create_significance_filters(self, drug_dataframe, significance_cutoff):
         # drug_dataframe will be a dataframe that has the first col
         # as ID_REF and the rest of the columns will hold gene expression
         # levels
 
-        return 0
+        drug_values = drug_dataframe.iloc[:, 1:]  # get everything except the clone id
+        clone_ids = drug_dataframe.iloc[:, 0]
+        
+        sig_drug_values = np.abs(drug_values) >= significance_cutoff
+
+        # re append the values to the clone ids
+        sig_drug_dataframe = pd.concat([clone_ids, sig_drug_values], axis=1)
+        return sig_drug_dataframe
 
 
 if __name__ == '__main__':
@@ -91,8 +100,7 @@ if __name__ == '__main__':
     # print(drug_data.average_drug_table.columns)
     # print(drug_data.average_drug_table.shape)
 
-    average_table = drug_data.create_average_drug_table()
+    # print(drug_data.average_drug_table)
     # number of cols and sheet names differ by one, makes sense
     # as the first col is the clone_id
-    print(average_table)
-    print(len(drug_data.sheet_names))
+    print(drug_data.significance_filters)
