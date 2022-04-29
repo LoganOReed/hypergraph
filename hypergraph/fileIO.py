@@ -100,6 +100,23 @@ def get_possible_pathways(organism):
     return pathways
 
 
+def read_KGML(path):
+    """reads .xml file into a dictionary
+    
+    Parameters
+    ----------
+    path : string
+        path to the .xml file
+    
+    Returns
+    -------
+    dicitonary
+        python dictionary where 
+    """
+    KEGG_info = KGML_parser.read(open(path, 'r'))
+    return KEGG_info
+
+
 if __name__ == "__main__":
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
@@ -116,4 +133,5 @@ if __name__ == "__main__":
 
     pathway_list = ['mtu01200', 'mtu00010']
     for pathway in pathway_list:
-        fetch_KGML_file(path_KEGG, pathway)
+        print('skipping over the loading')
+        # fetch_KGML_file(path_KEGG, pathway)
