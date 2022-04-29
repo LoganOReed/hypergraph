@@ -15,7 +15,11 @@ class KEGG_Network:
 
         # different types of nodes
         self.genes = self.pathway.genes  # unsure of difference to compounds
+        self.gene_list = self.generate_gene_list()
+
         self.compounds = self.pathway.compounds
+        self.compound_list = self.generate_compound_list()
+
         self.maps = self.pathway.maps
 
         # TODO:
@@ -31,6 +35,40 @@ class KEGG_Network:
             Description
         """
         return 0
+
+    def generate_gene_list(self):
+        """generates a list of genes that appear in the network
+        uses self.genes (a Bio.KEGG object) to generate the list
+        
+        Returns
+        -------
+        list
+            a list containing all of the genes that appear in the network
+        """
+        gene_list = []
+
+        for entry in self.genes:
+            names = entry.name.split(' ')
+            for name in names:
+                gene_list.append(name)
+        return gene_list
+
+    def generate_compound_list(self):
+        """generates a list of the compounds that appear int he network
+        uses self.compounds (a Bio.KEGG object) to generate the list
+        
+        Returns
+        -------
+        list
+            a list containing all of the compounds that appear in the network
+        """
+        compound_list = []
+
+        for entry in self.compounds:
+            names = entry.name.split(' ')
+            for name in names:
+                compound_list.append(name)
+        return compound_list
 
 
 if __name__ == '__main__':
@@ -51,6 +89,11 @@ if __name__ == '__main__':
 
     # information about these objects:
     # https://biopython.org/docs/1.76/api/Bio.KEGG.KGML.KGML_pathway.html
-    print(network.pathway)
-    for entry in network.reactions:
-        print(type(entry))
+    # print(network.pathway)
+    # for entry in network.reactions:
+    #     print(type(entry))
+    print('genes:')
+    print(network.gene_list)
+    print('#######################')
+    print('compounds:')
+    print(network.compound_list)
