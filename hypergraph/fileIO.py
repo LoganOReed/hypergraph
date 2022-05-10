@@ -4,6 +4,7 @@ import pandas as pd
 from Bio.KEGG.REST import kegg_info, kegg_list, kegg_get
 from Bio.KEGG.KGML import KGML_parser
 from Bio.Graphics.KGML_vis import KGMLCanvas
+import GEOparse
 
 
 def readXLSX(path):
@@ -117,6 +118,38 @@ def read_KGML(path):
     return KEGG_info
 
 
+def generate_cloneID_to_orf_table(path):
+    """ reads in a GPL file that contains information about a series of
+    experiments, gets the table that ties well_ids (ID) to gene names (ORF)
+    saves the resulting table
+    
+    Parameters
+    ----------
+    path : string
+        path to the desired GPL file
+    
+    Returns
+    -------
+    None
+        Because of a costly GEOparse.get_GEO, we simply run this function to 
+        generate the table of clone_ids to orfs, then we fetch from the
+        generated csv file later
+    """
+    gse = GEOparse.get_GEO(filepath=path)
+    platform_table = gse.table
+
+    clones_and_orfs = platform_table[['ID', 'ORF']]
+
+    absolutePath = os.path.abspath(__file__)
+    fileDirectory = os.path.dirname(absolutePath)
+    parentDirectory = os.path.dirname(fileDirectory)
+
+    save_location = os.path.join(parentDirectory, 'input_files/clone_to_orf.csv')
+    clones_and_orfs.to_csv(save_location)
+
+    return None
+
+
 if __name__ == "__main__":
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
@@ -127,6 +160,8 @@ if __name__ == "__main__":
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
 
+    path_table = os.path.join(parentDirectory, 'input_files/GPL1396_family.soft.gz')
+
     # print(readXLSX(path))
     # print(path)
     # combineSheets(readXLSX(path))
@@ -135,3 +170,5 @@ if __name__ == "__main__":
     for pathway in pathway_list:
         print('skipping over the loading')
         # fetch_KGML_file(path_KEGG, pathway)
+
+    clone_orf_table = generate_cloneID_to_orf_table(path_table)
