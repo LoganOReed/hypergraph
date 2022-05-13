@@ -23,18 +23,50 @@ class KEGG_Network:
         self.maps = self.pathway.maps
 
         # TODO:
-        self.adjacency_matrix = self.create_adjacency_matrix()
+        self.adjacency_matrix = self.create_S_matrix()
 
-    def create_adjacency_matrix(self):
-        """creates an adjacency matrix based on the reactions
-        from the KGML pathway. Utilizes self.reactions
+    def create_S_matrix(self):
+        """creates the S matrix based on the reactions
+        from the KGML pathway. Utilizes self.reactions and self.genes
         
         Returns
         -------
-        TYPE
-            Description
+        2d matrix
+            
         """
-        return 0
+
+        # we iterate throgh the reactions, building product list
+        # and substrate list, note, if reaction is reversible then we add
+        # substrates to the product list and products to the substrates list
+        # (ie: the opposite direction)
+        substrate_list = []
+        product_list = []
+        for reaction in self.reactions:
+            substrates = reaction.substrates
+            products = reaction.products
+            
+            substrate_list.append(substrates)
+            product_list.append(products)
+
+            if reaction.type == 'reversible':
+                product_list.append(substrates)
+                substrate_list.append(products)    
+
+        num_genes = len(self.gene_list)
+
+
+        # Create S matrix here:
+
+
+        # sample code for demonstrating odd behavior
+        for reaction in self.reactions:
+            test = [entry._names for entry in reaction.substrates]
+            print('##########################################')
+            print(reaction)
+            print('reaction.substrates:', reaction.substrates)
+            print('substrates._names: ')
+            for thing in reaction.substrates:
+                print(thing._names)
 
     def generate_gene_list(self):
         """generates a list of genes that appear in the network
@@ -92,8 +124,9 @@ if __name__ == '__main__':
     # print(network.pathway)
     # for entry in network.reactions:
     #     print(type(entry))
-    print('genes:')
-    print(network.gene_list)
-    print('#######################')
-    print('compounds:')
-    print(network.compound_list)
+
+    # print('genes:')
+    # print(network.gene_list)
+    # print('#######################')
+    # print('compounds:')
+    # print(network.compound_list)

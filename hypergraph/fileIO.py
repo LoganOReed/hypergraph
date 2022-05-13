@@ -137,7 +137,6 @@ def generate_cloneID_to_orf_table(path):
     """
     gse = GEOparse.get_GEO(filepath=path)
     platform_table = gse.table
-
     clones_and_orfs = platform_table[['ID', 'ORF']]
 
     absolutePath = os.path.abspath(__file__)
@@ -145,9 +144,16 @@ def generate_cloneID_to_orf_table(path):
     parentDirectory = os.path.dirname(fileDirectory)
 
     save_location = os.path.join(parentDirectory, 'input_files/clone_to_orf.csv')
-    clones_and_orfs.to_csv(save_location)
+    clones_and_orfs.to_csv(save_location, index=False)
 
     return None
+
+
+def read_cloneID_to_orf_table(path):
+    print(path)
+    clone_orf_table = pd.read_csv(path)
+
+    return clone_orf_table
 
 
 if __name__ == "__main__":
@@ -160,7 +166,8 @@ if __name__ == "__main__":
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
 
-    path_table = os.path.join(parentDirectory, 'input_files/GPL1396_family.soft.gz')
+    path_soft_file = os.path.join(parentDirectory, 'input_files/GPL1396_family.soft.gz')
+    path_table = os.path.join(parentDirectory, 'input_files/clone_to_orf.csv')
 
     # print(readXLSX(path))
     # print(path)
@@ -171,4 +178,6 @@ if __name__ == "__main__":
         print('skipping over the loading')
         # fetch_KGML_file(path_KEGG, pathway)
 
-    clone_orf_table = generate_cloneID_to_orf_table(path_table)
+    clone_orf_table = read_cloneID_to_orf_table(path_table)
+    print(clone_orf_table)
+    
