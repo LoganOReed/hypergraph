@@ -23,12 +23,22 @@ class KEGG_Network:
         self.maps = self.pathway.maps
 
         # TODO:
-        self.adjacency_matrix = self.create_S_matrix()
+        self.adjacency_matrix = self.create_simple_S_matrix()
 
-    def create_S_matrix(self):
+    def create_simple_S_matrix(self):
         """creates the S matrix based on the reactions
-        from the KGML pathway. Utilizes self.reactions and self.genes
+        from the KGML pathway. Utilizes self.reactions and self.compound_list
         
+        We will construct a list of substrates and products that are in
+        parallel - where the same index will denote a reaction/edge
+
+        We will then iterate through those lists, constructing the simple edge
+        S matrix. Substrates will get a value of -1, while products get a value
+        of +1.
+
+        The S matrix will be built one column at a time (cols in S matrix
+        correspond to reactions/edges)
+
         Returns
         -------
         2d matrix
@@ -38,7 +48,7 @@ class KEGG_Network:
         # we iterate throgh the reactions, building product list
         # and substrate list, note, if reaction is reversible then we add
         # substrates to the product list and products to the substrates list
-        # (ie: the opposite direction)
+        # as well (ie: the opposite direction)
         substrate_list = []
         product_list = []
         for reaction in self.reactions:
@@ -52,11 +62,49 @@ class KEGG_Network:
                 product_list.append(substrates)
                 substrate_list.append(products)    
 
-        num_genes = len(self.gene_list)
+        # pre-processing on the substrates and products
+        # note: these lists are after duplication for reversible reactions
+        # sub_name_expanded and prod_name_expanded are in parallel - corresp to
+        # reactions
+        sub_name_expanded_list = []
+        for substrate in substrate_list:
+            sub_name_list = [sub._names for sub in substrate]  # extract the names
+            temp_list = []
+            for element in sub_name_list:
+                temp_list += element
+            sub_name_expanded_list.append(temp_list)
 
+        prod_name_expanded_list = []
+        for product in product_list:
+            prod_name_list = [prod._names for prod in product]
+            temp_list = []
+            for element in prod_name_list:
+                temp_list += element
+            prod_name_expanded_list.append(temp_list)
 
-        # Create S matrix here:
+        # create the simple edge S matrix:
+        num_edges = len(sub_name_expanded_list)
+        num_compounds = len(self.compound_list)
+        simple_S_matrix = np.zeros((num_compounds, 1))  # first col of zeros for shape
+        for i in range(0, num_edges):
+            # get the subs/prods for the reaction
+            substrates = sub_name_expanded_list[i]
+            products = prod_name_expanded_list[i]
 
+            # initialize empty col array
+            col = np.zeros((num_compounds, 1))
+
+            # find the index of the substrates in the compound list
+            indices_of_subs = np.where(np.isin(self.compound_list, substrates))[0]
+            indices_of_prods = np.where(np.isin(self.compound_list, products))[0]
+
+            col[indices_of_subs] = -1
+            col[indices_of_prods] = 1
+
+            simple_S_matrix = np.hstack((simple_S_matrix, col))
+        simple_S_matrix = simple_S_matrix[:, 1:]  # get rid of col of zeros
+
+        print(simple_S_matrix.shape)
 
         # sample code for demonstrating odd behavior
         for reaction in self.reactions:
@@ -67,6 +115,8 @@ class KEGG_Network:
             print('substrates._names: ')
             for thing in reaction.substrates:
                 print(thing._names)
+
+        return simple_S_matrix
 
     def generate_gene_list(self):
         """generates a list of genes that appear in the network
