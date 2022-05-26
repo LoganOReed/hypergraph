@@ -104,17 +104,17 @@ class KEGG_Network:
             simple_S_matrix = np.hstack((simple_S_matrix, col))
         simple_S_matrix = simple_S_matrix[:, 1:]  # get rid of col of zeros
 
-        print(simple_S_matrix.shape)
+        # print(simple_S_matrix.shape)
 
         # sample code for demonstrating odd behavior
-        for reaction in self.reactions:
-            test = [entry._names for entry in reaction.substrates]
-            print('##########################################')
-            print(reaction)
-            print('reaction.substrates:', reaction.substrates)
-            print('substrates._names: ')
-            for thing in reaction.substrates:
-                print(thing._names)
+        # for reaction in self.reactions:
+        #     test = [entry._names for entry in reaction.substrates]
+        #     print('##########################################')
+        #     print(reaction)
+        #     print('reaction.substrates:', reaction.substrates)
+        #     print('substrates._names: ')
+        #     for thing in reaction.substrates:
+        #         print(thing._names)
 
         return simple_S_matrix
 
