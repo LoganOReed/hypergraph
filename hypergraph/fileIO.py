@@ -6,6 +6,8 @@ from Bio.KEGG.KGML import KGML_parser
 from Bio.Graphics.KGML_vis import KGMLCanvas
 import GEOparse
 
+# TODO Check that combine sheets works properly
+
 
 def readXLSX(path):
     """Reads XLSX file into Pandas ExcelFile
@@ -77,6 +79,7 @@ def fetch_KGML_file(path, map_id):
     file.close()
 
 
+# TODO Clean up Docstrings
 def get_possible_pathways(organism):
     """Helper function, if we want to see possible pathways for
     a specific organism, this function will display them along
@@ -110,15 +113,18 @@ def read_KGML(path):
 
     Returns
     -------
-    dicitonary
+    KEGG_info
         python dictionary where
     """
+    # TODO Check Documentation to see what KEGG_info is
     KEGG_info = KGML_parser.read(open(path, "r"))
     return KEGG_info
 
 
 def generate_cloneID_to_orf_table(path):
-    """reads in a GPL file that contains information about a series of
+    """Creates a csv that contains a dictionary between clone_ids and orfs
+
+    Reads in a GPL file that contains information about a series of
     experiments, gets the table that ties well_ids (ID) to gene names (ORF)
     saves the resulting table
 
@@ -134,6 +140,7 @@ def generate_cloneID_to_orf_table(path):
         generate the table of clone_ids to orfs, then we fetch from the
         generated csv file later
     """
+    # TODO Reorganize above docstring
     gse = GEOparse.get_GEO(filepath=path)
     platform_table = gse.table
     clones_and_orfs = platform_table[["ID", "ORF"]]
@@ -142,6 +149,7 @@ def generate_cloneID_to_orf_table(path):
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
 
+    # TODO Move const strings to function parameters
     save_location = os.path.join(parentDirectory, "input_files/clone_to_orf.csv")
     clones_and_orfs.to_csv(save_location, index=False)
 
@@ -156,6 +164,7 @@ def read_cloneID_to_orf_table(path):
 
 
 if __name__ == "__main__":
+    # TODO Move Testing to tests
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
