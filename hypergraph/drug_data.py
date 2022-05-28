@@ -6,11 +6,10 @@ import functools
 
 
 class Drug_Data:
-
     def __init__(self, excel_df_dict):
         self.raw_dataframe_dict = excel_df_dict
         self.sheet_names = self.raw_dataframe_dict.keys()
-        
+
         self.drug_table = self.create_drug_table()
         self.drug_list = self.get_drug_list()
         self.num_drugs = len(self.drug_list)
@@ -19,7 +18,9 @@ class Drug_Data:
 
         # TODO: ############################
         default_sig_level = 1
-        self.significance_filters = self.create_significance_filters(self.drug_table, default_sig_level)
+        self.significance_filters = self.create_significance_filters(
+            self.drug_table, default_sig_level
+        )
         ##############################
 
     def create_drug_table(self):
@@ -27,7 +28,7 @@ class Drug_Data:
         expression levels. Data is pulled from self.raw_dataframe_dict
         which is a dictionary where keys are sheet names and values are
         pd dataframes of those sheets
-        
+
         Returns
         -------
         pd dataframe
@@ -41,13 +42,13 @@ class Drug_Data:
         # https://stackoverflow.com/questions/53935848/how-to-merge-all-data-frames-in-a-dictionary-in-python
         # 'on' determines which col we use a the key for the merge,
         # 'how' is what type of merge, we choose outer
-        my_reduce = functools.partial(pd.merge, on='ID_REF', how='outer')
+        my_reduce = functools.partial(pd.merge, on="ID_REF", how="outer")
         collated_table = functools.reduce(my_reduce, self.raw_dataframe_dict.values())
-        return collated_table 
+        return collated_table
 
     def get_drug_list(self):
         """This function simply gets the sheet names from the dictionary
-        
+
         Returns
         -------
         list
@@ -67,7 +68,7 @@ class Drug_Data:
         the number of columns for each dataframe in the dictionary
         Columns correspond to treatment with the drug (sheet name)
         some experiments (treatments) contain multiple replicates
-        
+
         Returns
         -------
         list
@@ -79,13 +80,13 @@ class Drug_Data:
         for sheet in self.raw_dataframe_dict.values():
             # number of replicates is just the number of columns in each sheet
             # we subtract 1 because the first column is id_ref (ie: gene names)
-            num_replicates.append(len(sheet.columns)-1)
+            num_replicates.append(len(sheet.columns) - 1)
         return num_replicates
 
     def create_average_drug_table(self):
         """the function gives a dataframe containing average drug effect
         we are averaging over the replicates for each drug
-        
+
         Returns
         -------
         dataframe
@@ -96,11 +97,11 @@ class Drug_Data:
         # create a new dataframe that we will populate with average values
         # we start by setting the first col to the ID_REF of the existing table
         average_drug_table = pd.DataFrame([self.drug_table.ID_REF]).transpose()
-        
+
         for i in range(0, self.num_drugs):
             # build the new column header
             cur_drug = self.drug_list[i]
-            cur_col_header = cur_drug + '_avg'
+            cur_col_header = cur_drug + "_avg"
 
             # get the dataframe for the current drug
             cur_drug_table = self.raw_dataframe_dict[cur_drug]
@@ -115,7 +116,7 @@ class Drug_Data:
         and cols correponds to treatment, entries are true/false depending on
         whether gene expression level in drug_dataframe is greater than
         significance_cutoff (in abs values)
-        
+
         Parameters
         ----------
         drug_dataframe : pd dataframe
@@ -124,7 +125,7 @@ class Drug_Data:
             levels
         significance_cutoff : double
             value for which we say a drug has a significant effect on a gene
-        
+
         Returns
         -------
         dataframe
@@ -138,7 +139,7 @@ class Drug_Data:
 
         drug_values = drug_dataframe.iloc[:, 1:]  # get everything except the clone id
         clone_ids = drug_dataframe.iloc[:, 0]
-        
+
         sig_drug_values = np.abs(drug_values) >= significance_cutoff
 
         # re append the values to the clone ids
@@ -146,12 +147,13 @@ class Drug_Data:
         return sig_drug_dataframe
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
     path = os.path.join(
-        parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx")
+        parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
+    )
 
     excel = readXLSX(path)
 
