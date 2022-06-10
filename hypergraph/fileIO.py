@@ -157,7 +157,7 @@ def generate_cloneID_to_orf_table(path):
 
 
 def read_cloneID_to_orf_table(path):
-    print(path)
+    # print(path)
     clone_orf_table = pd.read_csv(path)
 
     return clone_orf_table
