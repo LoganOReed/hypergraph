@@ -99,5 +99,6 @@ ENV/
 # mypy
 .mypy_cache/
 
-# Personal org files
+# Personal files
 *.org
+tags

@@ -18,3 +18,7 @@ def succ(num):
         An explanation of `out`. `out` = `num` + 1.
     """
     return num + 1
+
+
+if __name__ == "__main__":
+    print(succ(9))
