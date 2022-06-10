@@ -106,6 +106,26 @@ class KEGG_Network:
 
         return simple_S_matrix
 
+    def hill_function(self, x, k, n):
+        """Calculates the value of the Hill Function for a given metabolite.
+        
+        Parameters
+        ----------
+        x : float
+            The mass of the metabolite.
+        k : float
+            The concentration that returns half of the total value.
+        n : int
+            The Hill Coefficient.
+
+        Returns
+        -------
+        val : float
+            The value of the Hill Function
+        """
+        val = np.power(x,n) / (k + np.power(x,n))
+        return val
+
     def generate_gene_list(self):
         """generates a list of genes that appear in the network
         uses self.genes (a Bio.KEGG object) to generate the list
@@ -175,6 +195,7 @@ if __name__ == "__main__":
             count += x
             print(index, x)
     print("total: ", count)
+    print("hill: ", network.hill_function(3, 6, 5))
 
 
 
