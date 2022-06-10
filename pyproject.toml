@@ -9,9 +9,12 @@ description = "Uses Hypergraphs to Simulate Drug Combinations for TB."
 authors = ["Logan Reed <me@loganreed.org>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8"
+python = ">=3.8,<4"
 pandas = "^1.4.1"
 openpyxl = "^3.0.9"
+biopython = "^1.79"
+reportlab = "^3.6.9"
+GEOparse = "^2.0.3"
 
 [tool.poetry.dev-dependencies]
 tox = "^3.24.5"

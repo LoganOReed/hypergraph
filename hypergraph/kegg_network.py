@@ -4,13 +4,14 @@ import os
 
 
 class KEGG_Network:
-
     def __init__(self, pathway_object):
         self.pathway = pathway_object
 
         # different types of edges
         self.reactions = self.pathway.reactions  # iterable of KGML_pathway.Reaction
-        self.reaction_entries = self.pathway.reaction_entries  # seems to relate to images
+        self.reaction_entries = (
+            self.pathway.reaction_entries
+        )  # seems to relate to images
         self.relations = self.pathway.relations  # seems to be empty?
 
         # different types of nodes
@@ -28,7 +29,7 @@ class KEGG_Network:
     def create_simple_S_matrix(self):
         """creates the S matrix based on the reactions
         from the KGML pathway. Utilizes self.reactions and self.compound_list
-        
+
         We will construct a list of substrates and products that are in
         parallel - where the same index will denote a reaction/edge
 
@@ -42,7 +43,7 @@ class KEGG_Network:
         Returns
         -------
         2d matrix
-            
+
         """
 
         # we iterate throgh the reactions, building product list
@@ -54,13 +55,13 @@ class KEGG_Network:
         for reaction in self.reactions:
             substrates = reaction.substrates
             products = reaction.products
-            
+
             substrate_list.append(substrates)
             product_list.append(products)
 
-            if reaction.type == 'reversible':
+            if reaction.type == "reversible":
                 product_list.append(substrates)
-                substrate_list.append(products)    
+                substrate_list.append(products)
 
         # pre-processing on the substrates and products
         # note: these lists are after duplication for reversible reactions
@@ -107,6 +108,7 @@ class KEGG_Network:
         # print(simple_S_matrix.shape)
 
         # sample code for demonstrating odd behavior
+
         # for reaction in self.reactions:
         #     test = [entry._names for entry in reaction.substrates]
         #     print('##########################################')
@@ -121,7 +123,7 @@ class KEGG_Network:
     def generate_gene_list(self):
         """generates a list of genes that appear in the network
         uses self.genes (a Bio.KEGG object) to generate the list
-        
+
         Returns
         -------
         list
@@ -130,7 +132,7 @@ class KEGG_Network:
         gene_list = []
 
         for entry in self.genes:
-            names = entry.name.split(' ')
+            names = entry.name.split(" ")
             for name in names:
                 gene_list.append(name)
         return gene_list
@@ -138,7 +140,7 @@ class KEGG_Network:
     def generate_compound_list(self):
         """generates a list of the compounds that appear int he network
         uses self.compounds (a Bio.KEGG object) to generate the list
-        
+
         Returns
         -------
         list
@@ -147,13 +149,13 @@ class KEGG_Network:
         compound_list = []
 
         for entry in self.compounds:
-            names = entry.name.split(' ')
+            names = entry.name.split(" ")
             for name in names:
                 compound_list.append(name)
         return compound_list
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
@@ -164,8 +166,8 @@ if __name__ == '__main__':
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
 
-    file_path = path_KEGG + 'mtu01200.xml'
-    
+    file_path = path_KEGG + "mtu01200.xml"
+
     pathway_obj = read_KGML(file_path)
     network = KEGG_Network(pathway_obj)
 
