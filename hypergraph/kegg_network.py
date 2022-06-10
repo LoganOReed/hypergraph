@@ -4,9 +4,11 @@ import os
 
 
 class KEGG_Network:
+    """A Graph That Encodes the Metabolic Graph"""
     def __init__(self, pathway_object):
         self.pathway = pathway_object
 
+        # TODO: Do we need variables for this when its in pathway?
         # different types of edges
         self.reactions = self.pathway.reactions  # iterable of KGML_pathway.Reaction
         self.reaction_entries = (
@@ -23,12 +25,12 @@ class KEGG_Network:
 
         self.maps = self.pathway.maps
 
-        # TODO:
         self.adjacency_matrix = self.create_simple_S_matrix()
 
     def create_simple_S_matrix(self):
-        """creates the S matrix based on the reactions
-        from the KGML pathway. Utilizes self.reactions and self.compound_list
+        """creates the S matrix based on the reactions from the KGML pathway.
+
+        Utilizes self.reactions and self.compound_list
 
         We will construct a list of substrates and products that are in
         parallel - where the same index will denote a reaction/edge
@@ -53,15 +55,12 @@ class KEGG_Network:
         substrate_list = []
         product_list = []
         for reaction in self.reactions:
-            substrates = reaction.substrates
-            products = reaction.products
-
-            substrate_list.append(substrates)
-            product_list.append(products)
+            substrate_list.append(reaction.substrates)
+            product_list.append(reaction.products)
 
             if reaction.type == "reversible":
-                product_list.append(substrates)
-                substrate_list.append(products)
+                product_list.append(reaction.substrates)
+                substrate_list.append(reaction.products)
 
         # pre-processing on the substrates and products
         # note: these lists are after duplication for reversible reactions
@@ -104,19 +103,6 @@ class KEGG_Network:
 
             simple_S_matrix = np.hstack((simple_S_matrix, col))
         simple_S_matrix = simple_S_matrix[:, 1:]  # get rid of col of zeros
-
-        # print(simple_S_matrix.shape)
-
-        # sample code for demonstrating odd behavior
-
-        # for reaction in self.reactions:
-        #     test = [entry._names for entry in reaction.substrates]
-        #     print('##########################################')
-        #     print(reaction)
-        #     print('reaction.substrates:', reaction.substrates)
-        #     print('substrates._names: ')
-        #     for thing in reaction.substrates:
-        #         print(thing._names)
 
         return simple_S_matrix
 
@@ -173,12 +159,28 @@ if __name__ == "__main__":
 
     # information about these objects:
     # https://biopython.org/docs/1.76/api/Bio.KEGG.KGML.KGML_pathway.html
-    # print(network.pathway)
-    # for entry in network.reactions:
-    #     print(type(entry))
+    print(network.pathway)
+    for entry in network.reactions:
+        print(type(entry))
 
-    # print('genes:')
-    # print(network.gene_list)
-    # print('#######################')
-    # print('compounds:')
-    # print(network.compound_list)
+    print('genes:')
+    print(network.gene_list)
+    print('#######################')
+    print('compounds:')
+    print(network.compound_list)
+    s_matrix = network.create_simple_S_matrix()
+    count = 0
+    for index, x in np.ndenumerate(s_matrix):
+        if x != 0:
+            count += x
+            print(index, x)
+    print("total: ", count)
+
+
+
+
+
+
+
+
+

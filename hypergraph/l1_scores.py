@@ -15,14 +15,14 @@ class L1_scores:
 
     def compute_L1(self, drug_combination, network, clone_ORF_lookup):
         """Computes the L1 score for a single drug combination and network
-        
+
         Parameters
         ----------
         drug_combination : list of col indices
             indices corresp to drugs from the drug_table
         network : kegg_network object
             Description
-        
+
         Returns
         -------
         L1 score
@@ -59,13 +59,15 @@ class L1_scores:
                 genes_in_network_index_list.append(gene_in_network_idex)
             except ValueError:
                 pass
-        
+
         # print(genes_in_network_index_list)
 
         # compute the sum for the drug combo
         # start with non-abs-val sum over rows (accounts for overlap)
         # finish with column sums in abs val
-        sig_drug_combo_values_in_network = sig_drug_values.iloc[genes_in_network_index_list, drug_combination]
+        sig_drug_combo_values_in_network = sig_drug_values.iloc[
+            genes_in_network_index_list, drug_combination
+        ]
         row_sum = sig_drug_combo_values_in_network.sum(axis=1)
         # print(row_sum)
         L1_score = row_sum.abs().sum()
@@ -73,7 +75,7 @@ class L1_scores:
         return L1_score
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
@@ -83,9 +85,9 @@ if __name__ == '__main__':
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
 
-    path_network = path_KEGG + 'mtu01200.xml'
+    path_network = path_KEGG + "mtu01200.xml"
 
-    path_cloneID_ORF = os.path.join(parentDirectory, 'input_files/clone_to_orf.csv')
+    path_cloneID_ORF = os.path.join(parentDirectory, "input_files/clone_to_orf.csv")
 
     excel = readXLSX(path_drug_data)
     drug_data = Drug_Data(excel)

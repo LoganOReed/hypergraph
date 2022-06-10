@@ -101,4 +101,5 @@ ENV/
 
 # Personal files
 *.org
+todo.md
 tags
