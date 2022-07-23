@@ -5,6 +5,7 @@ import os
 
 class KEGG_Network:
     """A Graph That Encodes the Metabolic Graph"""
+
     def __init__(self, pathway_object):
         self.pathway = pathway_object
 
@@ -108,7 +109,7 @@ class KEGG_Network:
 
     def hill_function(self, x, k, n):
         """Calculates the value of the Hill Function for a given metabolite.
-        
+
         Parameters
         ----------
         x : float
@@ -123,7 +124,7 @@ class KEGG_Network:
         val : float
             The value of the Hill Function
         """
-        val = np.power(x,n) / (k + np.power(x,n))
+        val = np.power(x, n) / (k + np.power(x, n))
         return val
 
     def generate_gene_list(self):
@@ -183,10 +184,10 @@ if __name__ == "__main__":
     for entry in network.reactions:
         print(type(entry))
 
-    print('genes:')
+    print("genes:")
     print(network.gene_list)
-    print('#######################')
-    print('compounds:')
+    print("#######################")
+    print("compounds:")
     print(network.compound_list)
     s_matrix = network.create_simple_S_matrix()
     count = 0
@@ -196,12 +197,3 @@ if __name__ == "__main__":
             print(index, x)
     print("total: ", count)
     print("hill: ", network.hill_function(3, 6, 5))
-
-
-
-
-
-
-
-
-

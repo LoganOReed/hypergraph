@@ -5,7 +5,7 @@ def test_filePath():
     """Tests file path"""
     # Replace correctPath with your actual path
     # I don't know if the os changes how this code functions
-    correctPath = "/home/occam/Documents/Code/hypergraph/input_files/Multidrug_6hr_Responses_trimmed.xlsx"
+    correctPath = "/home/occam/Documents/code/hypergraph/input_files/Multidrug_6hr_Responses_trimmed.xlsx"
     absolutePath = os.path.abspath(__file__)
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
