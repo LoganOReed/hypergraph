@@ -81,4 +81,17 @@ if __name__ == "__main__":
     well_id_in_network_list = d_u.get_well_ids_of_genes_in_network(
         genes_to_reactions_dict)
 
-    print(well_id_in_network_list)
+    # this section will find the drug effect for each reaction in the list
+    drug_combo = [10, 14, 17, 24]
+    drug_table = drug_data.drug_table
+    print(drug_table)
+    drug_effect_dict = {}
+    for well_id in well_id_in_network_list:
+        reverse_index = clone_ORF_lookup.iloc[:, 0].tolist().index(well_id)
+        gene = clone_ORF_lookup.iloc[reverse_index, 1]
+
+        index_of_well_in_drug_table = drug_table.iloc[:, 0].tolist().index(well_id)
+        drug_effect = drug_table.iloc[index_of_well_in_drug_table, drug_combo]
+        print(drug_effect)
+
+
