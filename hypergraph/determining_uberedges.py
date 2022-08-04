@@ -21,6 +21,14 @@ class Determining_Uberedges:
 
         return genes_to_reactions
 
+    def reactions_to_genes(self, network):
+        reactions_to_genes = {}
+        for gene in network.genes:
+            for reaction in gene.reaction.split(" "):
+                reactions_to_genes[reaction] = gene.name.split(" ")
+
+        return reactions_to_genes
+
     def get_well_ids_of_genes_in_network(self, genes_to_reactions_dict):
         # in this section, we are looking up the well_ids to tie back to the
         # drug_data in order to get the effect on the reactions
@@ -45,7 +53,7 @@ if __name__ == "__main__":
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
     path_drug_data = os.path.join(
-        parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
+        parentDirectory, "input_files/Multidrug_6hr_Responses.xlsx"
     )
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
@@ -77,6 +85,7 @@ if __name__ == "__main__":
 
     d_u = Determining_Uberedges(drug_data)
     genes_to_reactions_dict = d_u.genes_to_reactions(network)
+    reactions_to_genes_dict = d_u.reactions_to_genes(network)
 
     well_id_in_network_list = d_u.get_well_ids_of_genes_in_network(
         genes_to_reactions_dict)
@@ -84,14 +93,32 @@ if __name__ == "__main__":
     # this section will find the drug effect for each reaction in the list
     drug_combo = [10, 14, 17, 24]
     drug_table = drug_data.drug_table
-    print(drug_table)
     drug_effect_dict = {}
     for well_id in well_id_in_network_list:
         reverse_index = clone_ORF_lookup.iloc[:, 0].tolist().index(well_id)
         gene = clone_ORF_lookup.iloc[reverse_index, 1]
 
         index_of_well_in_drug_table = drug_table.iloc[:, 0].tolist().index(well_id)
-        drug_effect = drug_table.iloc[index_of_well_in_drug_table, drug_combo]
-        print(drug_effect)
+        drug_effects = drug_table.iloc[index_of_well_in_drug_table, drug_combo]
+        
+        summed_drug_effect = sum(drug_effects)
+        drug_effect_dict[gene] = summed_drug_effect
 
+    # print("######### drug effect dictionary #########")
+    # print(drug_effect_dict)
 
+    # print("########### genes to reactions dictionary #########")
+    # print(genes_to_reactions_dict)
+
+    # this section will use the gene to reaction dict
+    # and the drug effet dictionary to create a new dictionary
+    # which contains reactions as keys and values of effect
+    reaction_drug_effect_dict = {}
+    for key in drug_effect_dict.keys():
+        drug_effect = drug_effect_dict[key]
+        new_key = "mtu:" + key
+        reactions = genes_to_reactions_dict[new_key]
+        for reaction in reactions:
+            reaction_drug_effect_dict[reaction] = drug_effect
+
+    print(reaction_drug_effect_dict)
