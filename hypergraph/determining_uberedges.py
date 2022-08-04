@@ -21,6 +21,24 @@ class Determining_Uberedges:
 
         return genes_to_reactions
 
+    def get_well_ids_of_genes_in_network(self, genes_to_reactions_dict):
+        # in this section, we are looking up the well_ids to tie back to the
+        # drug_data in order to get the effect on the reactions
+        genes_in_network = []
+        for key in genes_to_reactions_dict.keys():
+            genes_in_network.append(key)
+
+        well_id_in_network_list = []
+        for gene in genes_in_network:
+            try:
+                # gene is prefixed by mtu:, clone_ORF_lookup excludes this prefix
+                index = clone_ORF_lookup.iloc[:, 1].tolist().index(gene[4:])
+                well_id_in_network_list.append(clone_ORF_lookup.iloc[index, 0])
+            except ValueError:
+                pass
+
+        return well_id_in_network_list
+
 
 if __name__ == "__main__":
     absolutePath = os.path.abspath(__file__)
@@ -44,20 +62,23 @@ if __name__ == "__main__":
 
     clone_ORF_lookup = read_cloneID_to_orf_table(path_cloneID_ORF)
 
-    print("######### reactions ##########")
-    for reaction in network.reactions:
-        print(reaction)
+    # print("######### reactions ##########")
+    # for reaction in network.reactions:
+    #     print(reaction)
 
-    print("########### genes ###############")
-    for gene in network.genes:
-        print(gene)
+    # print("########### genes ###############")
+    # for gene in network.genes:
+    #     print(gene)
 
-    print("######## misc ######")
-    gene = network.genes[10]
-    print(gene)
-    print(gene.reaction)
+    # print("######## misc ######")
+    # gene = network.genes[10]
+    # print(gene)
+    # print(gene.reaction)
 
     d_u = Determining_Uberedges(drug_data)
-    test = d_u.genes_to_reactions(network)
+    genes_to_reactions_dict = d_u.genes_to_reactions(network)
 
-    print(test)
+    well_id_in_network_list = d_u.get_well_ids_of_genes_in_network(
+        genes_to_reactions_dict)
+
+    print(well_id_in_network_list)
