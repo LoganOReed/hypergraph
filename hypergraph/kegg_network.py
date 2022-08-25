@@ -8,15 +8,16 @@ class KEGG_Network:
 
     def __init__(self, pathway_object):
         self.pathway = pathway_object
-
+        self.name = pathway_object.name
         # TODO: Do we need variables for this when its in pathway?
         # different types of edges
         self.reactions = self.pathway.reactions  # iterable of KGML_pathway.Reaction
+        self.reaction_list = self.generate_reaction_list()
         self.reaction_entries = (
             self.pathway.reaction_entries
         )  # seems to relate to images
         self.relations = self.pathway.relations  # seems to be empty?
-
+        self.relation_list = self.generate_relation_list()
         # different types of nodes
         self.genes = self.pathway.genes  # unsure of difference to compounds
         self.gene_list = self.generate_gene_list()
@@ -27,6 +28,18 @@ class KEGG_Network:
         self.maps = self.pathway.maps
 
         self.adjacency_matrix = self.create_simple_S_matrix()
+
+    def generate_reaction_list(self):
+        reaction_list = []
+        for entry in self.reactions:
+            reaction_list.append(entry)
+        return reaction_list
+
+    def generate_relation_list(self):
+        relation_list = []
+        for entry in self.relations:
+            relation_list.append(entry)
+        return relation_list
 
     def create_simple_S_matrix(self):
         """creates the S matrix based on the reactions from the KGML pathway.

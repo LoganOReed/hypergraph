@@ -173,32 +173,32 @@ class KEGG_Visualizer:
         ax.set_title(self.network.name)
 
         # section for edge weights and colors
-        edge_attributes = nx.get_edge_attributes(self.relation_graph, 'label')  # dictionary
-        colors = []
-        weights = []
-        for edge in self.relation_graph.edges:
+        # edge_attributes = nx.get_edge_attributes(self.relation_graph, 'label')  # dictionary
+        # colors = []
+        # weights = []
+        # for edge in self.relation_graph.edges:
 
-            # simply increase edge weight:
-            weights.append(2)
+        #     # simply increase edge weight:
+        #     weights.append(2)
 
-            edge_attributes_list = edge_attributes[edge]
-            attributes = []
-            # edge attributes are lists of tuples, we unpack them here
-            for entry in edge_attributes_list:
-                for thing in entry:
-                    attributes.append(thing)
-            attributes_str = ' '.join(attributes)
-            if 'activation' in attributes_str:
-                # green
-                colors.append('#a0e2a8')
-            # elif 'expression' in attributes_str:
-            #     colors.append('green')
-            elif 'inhibition' in attributes_str:
-                # red
-                colors.append('#d66969')
-            else:
-                # balck/grey
-                colors.append('#383b38')
+        #     edge_attributes_list = edge_attributes[edge]
+        #     attributes = []
+        #     # edge attributes are lists of tuples, we unpack them here
+        #     for entry in edge_attributes_list:
+        #         for thing in entry:
+        #             attributes.append(thing)
+        #     attributes_str = ' '.join(attributes)
+        #     if 'activation' in attributes_str:
+        #         # green
+        #         colors.append('#a0e2a8')
+        #     # elif 'expression' in attributes_str:
+        #     #     colors.append('green')
+        #     elif 'inhibition' in attributes_str:
+        #         # red
+        #         colors.append('#d66969')
+        #     else:
+        #         # balck/grey
+        #         colors.append('#383b38')
 
         # section for node position and size
         my_pos = graphviz_layout(self.relation_graph, prog='neato')
@@ -226,12 +226,12 @@ class KEGG_Visualizer:
         if self.relation_color_map is None:
             nx.draw(
                 self.relation_graph, node_size=my_node_size, pos=my_pos,
-                edge_color=colors, width=weights, labels=label_dict, with_labels=True, ax=ax)
+                labels=label_dict, with_labels=True, ax=ax)
         else:
             nx.draw(
                 self.relation_graph, node_color=self.relation_color_map,
-                node_size=my_node_size, pos=my_pos, edge_color=colors,
-                width=weights, labels=label_dict, with_labels=True, ax=ax)
+                node_size=my_node_size, pos=my_pos,
+                labels=label_dict, with_labels=True, ax=ax)
 
         # nx.draw_networkx_edge_labels(self.relation_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.relation_graph, 'label'), clip_on=False, alpha=0.5)
         # print(nx.get_edge_attributes(self.relation_graph, 'label'))
@@ -306,4 +306,22 @@ class KEGG_Visualizer:
 
 
 if __name__ == '__main__':
-    print(" hello world")
+    absolutePath = os.path.abspath(__file__)
+    fileDirectory = os.path.dirname(absolutePath)
+    parentDirectory = os.path.dirname(fileDirectory)
+    path_drug_data = os.path.join(
+        parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
+    )
+
+    path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
+
+    file_path = path_KEGG + "mtu00010.xml"
+
+    pathway_obj = read_KGML(file_path)
+    network = KEGG_Network(pathway_obj)
+
+    net_vis = KEGG_Visualizer(network)
+    net_vis.plot_relation_graph()
+
+    print(len(network.relation_list))
+    print(len(network.reaction_list))
