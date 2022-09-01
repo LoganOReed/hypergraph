@@ -48,8 +48,10 @@ class KEGG_Visualizer:
         self.substrate_id_to_name_dict = sub_id_dict
         self.product_id_to_name_dict = prod_id_dict
 
+        self.expanded_reaction_df = self.expand_reaction_df(self.reaction_df)
+
         self.relation_graph = self.generate_relation_graph(self.relation_df)
-        self.reaction_graph = self.generate_reaction_graph()
+        self.reaction_graph = self.generate_reaction_graph(self.exapanded_reaction_df)
 
         # color  maps will only be set if drug data is added
         self.relation_color_map = None
@@ -145,7 +147,42 @@ class KEGG_Visualizer:
 
         return reaction_df, reaction_id_to_name_dict, substrate_id_to_name_dict, product_id_to_name_dict
 
-    def generate_reaction_graph(self):
+    def expand_reaction_df(self, reaction_df):
+        
+        new_table = []
+
+        for i in range(0, reaction_df.shape[0]):
+
+            leading_nodes = reaction_df.iloc[i, 1]
+            trailing_nodes = reaction_df.iloc[i, 2]
+            num_leading_nodes = len(leading_nodes)
+            num_trailing_nodes = len(trailing_nodes)
+
+            reaction_id = reaction_df.iloc[i, 0]
+            reaction_type = reaction_df.iloc[i, 3]
+
+            if num_leading_nodes > 1 or num_trailing_nodes > 1:
+                is_hyper_edge = True
+            else:
+                is_hyper_edge = False
+
+            for j in range(0, num_leading_nodes):
+                leading_node = leading_nodes[j]
+                for k in range(0, num_trailing_nodes):
+                    trailing_node = trailing_nodes[k]
+
+                    new_row = [reaction_id, leading_node, trailing_node, reaction_type + str(is_hyper_edge)]
+                    new_table.append(new_row)
+
+                    if (reaction_type == 'reversible'):
+                        new_row = [reaction_id, trailing_node, leading_node, reaction_type + str(is_hyper_edge)]
+                        new_table.append(new_row)
+
+        new_df = pd.DataFrame(new_table, columns=['reaction_id', 'substrate', 'product', 'reaction_type'])
+
+        return new_df
+
+    def generate_reaction_graph(self, reaction_df):
         return None
 
     def plot_graph(self, graph_type):
@@ -315,13 +352,11 @@ if __name__ == '__main__':
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
 
-    file_path = path_KEGG + "mtu00010.xml"
+    file_path = path_KEGG + "mtu01200.xml"
 
     pathway_obj = read_KGML(file_path)
     network = KEGG_Network(pathway_obj)
 
     net_vis = KEGG_Visualizer(network)
-    net_vis.plot_relation_graph()
+    print(net_vis.expanded_reaction_df)
 
-    print(len(network.relation_list))
-    print(len(network.reaction_list))
