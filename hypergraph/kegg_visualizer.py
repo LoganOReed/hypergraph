@@ -51,7 +51,7 @@ class KEGG_Visualizer:
         self.expanded_reaction_df = self.expand_reaction_df(self.reaction_df)
 
         self.relation_graph = self.generate_relation_graph(self.relation_df)
-        self.reaction_graph = self.generate_reaction_graph(self.exapanded_reaction_df)
+        self.reaction_graph = self.generate_reaction_graph(self.expanded_reaction_df)
 
         # color  maps will only be set if drug data is added
         self.relation_color_map = None
@@ -166,6 +166,7 @@ class KEGG_Visualizer:
             else:
                 is_hyper_edge = False
 
+            # we add new row for each 'branch' of hyperedge
             for j in range(0, num_leading_nodes):
                 leading_node = leading_nodes[j]
                 for k in range(0, num_trailing_nodes):
@@ -174,6 +175,7 @@ class KEGG_Visualizer:
                     new_row = [reaction_id, leading_node, trailing_node, reaction_type + str(is_hyper_edge)]
                     new_table.append(new_row)
 
+                    # if the reaction is reversible, add the reverse
                     if (reaction_type == 'reversible'):
                         new_row = [reaction_id, trailing_node, leading_node, reaction_type + str(is_hyper_edge)]
                         new_table.append(new_row)
@@ -182,8 +184,14 @@ class KEGG_Visualizer:
 
         return new_df
 
-    def generate_reaction_graph(self, reaction_df):
-        return None
+    def generate_reaction_graph(self, expanded_reaction_df):
+        G = nx.DiGraph()
+        for i in range(0, expanded_reaction_df.shape[0]):
+            edge = expanded_reaction_df.iloc[i, 1:3].values.tolist()
+            edge_label = expanded_reaction_df.iloc[i, 3]
+            G.add_edge(*edge, label=edge_label)
+
+        return G
 
     def plot_graph(self, graph_type):
         """Summary
@@ -276,7 +284,38 @@ class KEGG_Visualizer:
         plt.show()
 
     def plot_reaction_graph(self):
-        return None
+        # setting up the figure (to enable adding a title)
+        plt.figure(figsize=(10, 5))
+        ax = plt.gca()
+        ax.set_title(self.network.name)
+
+        # section for node position and size
+        my_pos = graphviz_layout(self.reaction_graph, prog='neato')
+        my_node_size = 350
+
+        # label_dict = {}
+        # for node in self.relation_graph.nodes:
+        #     # for clarity, we only label with the first entry!!!!!!!!!
+        #     # TODO: change this functionality
+            
+        #     current_label = self.relation_entry_to_name_dict[node].split(" ")[0]
+        #     if current_label[0:4] == 'hsa:':
+        #         kegg_entrez_id = current_label[4:]
+        #         symbol = helper_functions.entrez_id_to_symbol(self.entrez_ids_df, self.symbol_names_df, int(kegg_entrez_id))
+        #         if symbol == 'None':
+        #             label_dict[node] = current_label
+        #         else:
+        #             label_dict[node] = symbol
+        #     else:
+        #         label_dict[node] = current_label
+
+            # label_dict[node] = self.relation_entry_to_name_dict[node].split(" ")[0]
+
+        nx.draw(self.reaction_graph, node_size=my_node_size, pos=my_pos, with_labels=True, ax=ax)
+
+        nx.draw_networkx_edge_labels(self.reaction_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.reaction_graph, 'label'), clip_on=False, alpha=0.5)
+
+        plt.show()
 
     def add_drug_data(self, drug_data, graph_type):
         """Summary
@@ -358,5 +397,17 @@ if __name__ == '__main__':
     network = KEGG_Network(pathway_obj)
 
     net_vis = KEGG_Visualizer(network)
-    print(net_vis.expanded_reaction_df)
 
+    for compound in network.compounds:
+        print(compound)
+
+    # for gene in network.genes:
+    #     print(gene)
+
+    net_vis.plot_graph(graph_type='reaction')
+
+    # print(net_vis.expanded_reaction_df)
+    print(net_vis.reaction_graph.edges)
+    print(net_vis.reaction_graph.nodes)
+
+    
