@@ -4,6 +4,9 @@
 *$py.class
 poetry.lock
 
+# Notes
+notes/
+
 # C extensions
 *.so
 
