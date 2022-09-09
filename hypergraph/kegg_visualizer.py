@@ -149,36 +149,59 @@ class KEGG_Visualizer:
 
     def expand_reaction_df(self, reaction_df):
         
-        new_table = []
+        new_table = []  # create a new table to hold expanded hyperedges
+        hyper_edge_counter = 0  # keep count of how many hyperedges (for unique naming)
 
+        # We look at each existing edges (regardless of if hyper edge or not)
         for i in range(0, reaction_df.shape[0]):
 
+            # get the leading nodes, trailing nodes
             leading_nodes = reaction_df.iloc[i, 1]
             trailing_nodes = reaction_df.iloc[i, 2]
             num_leading_nodes = len(leading_nodes)
             num_trailing_nodes = len(trailing_nodes)
 
+            # get the unique id for the reaction and the reaction type
             reaction_id = reaction_df.iloc[i, 0]
             reaction_type = reaction_df.iloc[i, 3]
 
+            # determine if we have a hyperedge
             if num_leading_nodes > 1 or num_trailing_nodes > 1:
                 is_hyper_edge = True
+                virutal_hyper_node = 'h' + str(hyper_edge_counter)
+                hyper_edge_counter += 1
             else:
                 is_hyper_edge = False
 
-            # we add new row for each 'branch' of hyperedge
-            for j in range(0, num_leading_nodes):
-                leading_node = leading_nodes[j]
-                for k in range(0, num_trailing_nodes):
-                    trailing_node = trailing_nodes[k]
+            # if it's not a hyperedge, we essentially recreate the row
+            if not is_hyper_edge:
+                new_row = [reaction_id, leading_nodes[0], trailing_nodes[0], reaction_type + str(is_hyper_edge)]
+                new_table.append(new_row)
 
-                    new_row = [reaction_id, leading_node, trailing_node, reaction_type + str(is_hyper_edge)]
-                    new_table.append(new_row)
+                if (reaction_type == 'reversible'):
+                    new_rev_row = reaction_id, trailing_nodes[0], leading_nodes[0], reaction_type + str(is_hyper_edge)
+                    new_table.append(new_rev_row)
 
-                    # if the reaction is reversible, add the reverse
-                    if (reaction_type == 'reversible'):
-                        new_row = [reaction_id, trailing_node, leading_node, reaction_type + str(is_hyper_edge)]
-                        new_table.append(new_row)
+            # if it is a hyperedge, we split and add a virtual node
+            elif is_hyper_edge:
+                # we add new row for each 'branch' of hyperedge
+                for j in range(0, num_leading_nodes):
+                    leading_node = leading_nodes[j]
+                    for k in range(0, num_trailing_nodes):
+                        trailing_node = trailing_nodes[k]
+
+                        new_row_leading = [reaction_id, leading_node, virutal_hyper_node, reaction_type + str(is_hyper_edge)]
+                        new_row_trailing = [reaction_id, virutal_hyper_node, trailing_node, reaction_type + str(is_hyper_edge)]
+                        new_table.append(new_row_leading)
+                        new_table.append(new_row_trailing)
+
+                        # if the reaction is reversible, add the reverse
+                        if (reaction_type == 'reversible'):
+                            new_row_leading_rev = [reaction_id, virutal_hyper_node, leading_node, reaction_type + str(is_hyper_edge)]
+                            new_row_trailing_rev = [reaction_id, trailing_node, virutal_hyper_node, reaction_type + str(is_hyper_edge)]
+
+                            new_table.append(new_row_leading_rev)
+                            new_table.append(new_row_trailing_rev)
 
         new_df = pd.DataFrame(new_table, columns=['reaction_id', 'substrate', 'product', 'reaction_type'])
 
@@ -398,16 +421,16 @@ if __name__ == '__main__':
 
     net_vis = KEGG_Visualizer(network)
 
-    for compound in network.compounds:
-        print(compound)
+    net_vis.plot_graph(graph_type='reaction')
+
+    # for compound in network.compounds:
+    #     print(compound)
 
     # for gene in network.genes:
     #     print(gene)
 
-    net_vis.plot_graph(graph_type='reaction')
+    # net_vis.plot_graph(graph_type='reaction')
 
-    # print(net_vis.expanded_reaction_df)
-    print(net_vis.reaction_graph.edges)
-    print(net_vis.reaction_graph.nodes)
-
-    
+    # for reaction in network.reactions:
+    #     print(reaction)
+   
