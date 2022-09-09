@@ -315,6 +315,15 @@ class KEGG_Visualizer:
         # section for node position and size
         my_pos = graphviz_layout(self.reaction_graph, prog='neato')
         my_node_size = 350
+        my_node_size_list = []
+
+        # go through the nodes, if a node is a virtual hyper edge node
+        # then we set the size to be very small
+        for node in self.reaction_graph.nodes:
+            if str(node)[0] == 'h':  # if we have a virtual hyperedge node
+                my_node_size_list.append(1)
+            else:
+                my_node_size_list.append(my_node_size)
 
         # label_dict = {}
         # for node in self.relation_graph.nodes:
@@ -334,7 +343,7 @@ class KEGG_Visualizer:
 
             # label_dict[node] = self.relation_entry_to_name_dict[node].split(" ")[0]
 
-        nx.draw(self.reaction_graph, node_size=my_node_size, pos=my_pos, with_labels=True, ax=ax)
+        nx.draw(self.reaction_graph, node_size=my_node_size_list, pos=my_pos, with_labels=True, ax=ax)
 
         nx.draw_networkx_edge_labels(self.reaction_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.reaction_graph, 'label'), clip_on=False, alpha=0.5)
 
