@@ -11,31 +11,42 @@ from networkx.drawing.nx_agraph import graphviz_layout
 
 class KEGG_Visualizer:
 
-    """Summary
+    """Object to facilitate plotting networks described in KEGG kgml files
     
     Attributes
     ----------
-    network : TYPE
-        Description
-    reaction_color_map : TYPE
-        Description
-    reaction_df : TYPE
-        Description
-    reaction_graph : TYPE
-        Description
+    expanded_reaction_df : dataframe
+        dataframe holding edge information for reactions,
+         hyperedges expanded to simple edges
+    network : KEGG_Network
+        Custom object to hold information from .kgml file
+    product_id_to_name_dict : dictionary
+        Dictionary to map KEGG ids to common names
+    reaction_color_map : list
+        List of hex values to color nodes
+    reaction_df : dataframe
+        dataframe containing edge information from network.reactions
+    reaction_graph : networkx digraph
+        directed graph with hyper edges expanded to simple edges
+    reaction_id_to_name_dict : dictionary
+        Dictionary to map KEGG ids to common reaction names
     relation_color_map : list
-        Description
-    relation_graph : TYPE
-        Description
+        List of hex values to color nodes in relation graph
+    relation_graph : networkx digraph
+        directed graph to plot network.relations
+    relation_name_to_entry_dict : dictionary
+        Dictionary to map relation names to entries within relation
+    substrate_id_to_name_dict : dictionary
+        dictionary to map KEGG ids to substrate names
     """
     
     def __init__(self, network):
-        """Summary
+        """ Initializes a new KEGG_Visualizer object
         
         Parameters
         ----------
-        network : TYPE
-            Description
+        network : KEGG_Network
+            Custom KEGG_Network object that holds summary information of KEGG network
         """
         self.network = network
 
@@ -58,12 +69,12 @@ class KEGG_Visualizer:
         self.reaction_color_map = None
 
     def create_relation_df(self):
-        """Summary
+        """ Creates dataframe to hold information from self.network.relations
         
         Returns
         -------
-        TYPE
-            Description
+        dataframe
+            contains cols to describe edges in self.network.relations
         """
         entry_to_name_dict = {}
         entry1_id_list = []
@@ -88,17 +99,18 @@ class KEGG_Visualizer:
         return relation_df, entry_to_name_dict
 
     def generate_relation_graph(self, relation_df):
-        """Summary
+        """Generates networkx digraph based on edges in relation_df
         
         Parameters
         ----------
-        relation_df : TYPE
-            Description
+        relation_df : dataframe
+            dataframe containing relation information for network.relations
+            formatted: entry1, entry2, relation type, relation subtype
         
         Returns
         -------
-        TYPE
-            Description
+        networkx graph
+            Network x graph as described by edges: entry1 -> entry2
         """
         G = nx.DiGraph()
         for i in range(0, relation_df.shape[0]):
@@ -109,6 +121,13 @@ class KEGG_Visualizer:
         return G
 
     def create_reaction_df(self):
+        """Creates dataframe to hold edges based on network.reactions
+        
+        Returns
+        -------
+        dataframe
+            cols are: reaction id, substrates, products, reaction type
+        """
         reaction_id_to_name_dict = {}
         substrate_id_to_name_dict = {}
         product_id_to_name_dict = {}
@@ -148,11 +167,24 @@ class KEGG_Visualizer:
         return reaction_df, reaction_id_to_name_dict, substrate_id_to_name_dict, product_id_to_name_dict
 
     def expand_reaction_df(self, reaction_df):
+        """Expands the hyper edges from the reaction dataframe
+        eg: n1, n2 ---> n3 becomes n1 -> h1, n2 -> h1, h1 -> n3 
         
+        Parameters
+        ----------
+        reaction_df : dataframe
+            Dataframe holding edge information for reactions in network
+            (includes hyper edges)
+        
+        Returns
+        -------
+        dataframe
+            Dataframe containing edge information, with hyper edges expanded to simple edges
+        """
         new_table = []  # create a new table to hold expanded hyperedges
         hyper_edge_counter = 0  # keep count of how many hyperedges (for unique naming)
 
-        # We look at each existing edges (regardless of if hyper edge or not)
+        # We look at each existing edge (regardless of if hyper edge or not)
         for i in range(0, reaction_df.shape[0]):
 
             # get the leading nodes, trailing nodes
@@ -208,6 +240,20 @@ class KEGG_Visualizer:
         return new_df
 
     def generate_reaction_graph(self, expanded_reaction_df):
+        """Creates a networkx graph based on edges described by
+        expanded_reaction_df
+        
+        Parameters
+        ----------
+        expanded_reaction_df : dataframe
+            contains edges of reaction network, expanded to include
+            virtual hyper edge nodes
+        
+        Returns
+        -------
+        networkx graph
+            A graph described by the edges in network.reactions
+        """
         G = nx.DiGraph()
         for i in range(0, expanded_reaction_df.shape[0]):
             edge = expanded_reaction_df.iloc[i, 1:3].values.tolist()
@@ -217,12 +263,12 @@ class KEGG_Visualizer:
         return G
 
     def plot_graph(self, graph_type):
-        """Summary
+        """Plots the graph specified by graph_type
         
         Parameters
         ----------
-        graph_type : TYPE
-            Description
+        graph_type : string
+            Specify which graph to plot: relation or reaction
         """
         if graph_type == 'relation':
             self.plot_relation_graph()
@@ -232,7 +278,8 @@ class KEGG_Visualizer:
             print('unrecognized graph type, use relation or reaction')
 
     def plot_relation_graph(self):
-        """Summary
+        """ Function for plotting relation graphs
+        Call through self.plot_graph()
         """
 
         # setting up the figure (to enable adding a title)
@@ -307,6 +354,9 @@ class KEGG_Visualizer:
         plt.show()
 
     def plot_reaction_graph(self):
+        """ Function for plotting reaction graph
+        Call through self.plot_graph()
+        """
         # setting up the figure (to enable adding a title)
         plt.figure(figsize=(10, 5))
         ax = plt.gca()
@@ -350,7 +400,8 @@ class KEGG_Visualizer:
         plt.show()
 
     def add_drug_data(self, drug_data, graph_type):
-        """Summary
+        """ Color the graph nodes based on drug_data up/down regulation
+        specify graph_type for relation or reaction graph
         
         Parameters
         ----------
@@ -368,16 +419,18 @@ class KEGG_Visualizer:
             print("graph type not recognized, specify relation or reaction")
 
     def annotate_relation_graph(self, drug_data):
-        """Summary
+        """Add colors to nodes in self.relationg_graph based on 
+        up/down regulation
         
         Parameters
         ----------
-        drug_data : TYPE
-            Description
+        drug_data : dataframe
+            Dataframe of single time-point differential expression
+            of genes
         
         Returns
         -------
-        TYPE
+        None
             Description
         """
 
@@ -410,6 +463,19 @@ class KEGG_Visualizer:
         return None
 
     def annotate_reaction_graph(self, drug_data):
+        """Empty for now, need to tie together mtu##### and rn#####
+        kgml files
+        
+        Parameters
+        ----------
+        drug_data : dataframe
+            One timepoint gene differential expression data
+        
+        Returns
+        -------
+        TYPE
+            Description
+        """
         return None
 
 
@@ -425,6 +491,8 @@ if __name__ == '__main__':
 
     file_path = path_KEGG + "rn01200.xml"
 
+    # we create a pathway object, then create a network object
+    # Finally, make a KEGG_Visualizer object based on the network
     pathway_obj = read_KGML(file_path)
     network = KEGG_Network(pathway_obj)
 
