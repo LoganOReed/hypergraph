@@ -423,7 +423,7 @@ if __name__ == '__main__':
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
 
-    file_path = path_KEGG + "mtu01200.xml"
+    file_path = path_KEGG + "rn01200.xml"
 
     pathway_obj = read_KGML(file_path)
     network = KEGG_Network(pathway_obj)
@@ -431,15 +431,3 @@ if __name__ == '__main__':
     net_vis = KEGG_Visualizer(network)
 
     net_vis.plot_graph(graph_type='reaction')
-
-    # for compound in network.compounds:
-    #     print(compound)
-
-    # for gene in network.genes:
-    #     print(gene)
-
-    # net_vis.plot_graph(graph_type='reaction')
-
-    # for reaction in network.reactions:
-    #     print(reaction)
-   
