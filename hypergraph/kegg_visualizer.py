@@ -395,7 +395,8 @@ class KEGG_Visualizer:
 
         nx.draw(self.reaction_graph, node_size=my_node_size_list, pos=my_pos, with_labels=True, ax=ax)
 
-        nx.draw_networkx_edge_labels(self.reaction_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.reaction_graph, 'label'), clip_on=False, alpha=0.5)
+        # helpful for debugging
+        # nx.draw_networkx_edge_labels(self.reaction_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.reaction_graph, 'label'), clip_on=False, alpha=0.5)
 
         plt.show()
 
