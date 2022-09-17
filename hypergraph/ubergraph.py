@@ -4,22 +4,10 @@ import numpy as np
 # TODO Add error checking
 # TODO Add Network Completion
 
-# QUESTIONS:
-# 1. When do we add a sink/source?
-#    When there aren't any others, or are there more complicated rules?
-# 2. How does the simulation work? on pg 9 some of the columns don't add to 0.
-# 2!. Under the Assumption (H2) from Nathan's MAsters paper, we have the equations laid out
-#     on page 121 of the same paper.
-# 3. How do we decompose the hyperedge from pg 9 into two edges? Is that the only way?
-# 3!. I believe pg 117 of Nathan's Masters paper explains that the notation for pg 9 is
-#     Just shorthand for the two hyperedges.
-#
-# 4. For Completing the graph:
-#    Do we count bidirectional edges as neither sources nor sinks?
-
-
 # Rows correspond to vertices
 # Columns correspond to edges
+
+
 class Ubergraph:
 
     # Construct from list of edges

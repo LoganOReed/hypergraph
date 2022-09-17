@@ -13,7 +13,8 @@ def test_filePath():
     path = os.path.join(
         parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
     )
-    assert(path == correctPath)
+    assert path == correctPath
+
 
 def test_fileIO():
     """Tests fileIO.py being able to open a file"""
@@ -23,7 +24,7 @@ def test_fileIO():
         "PZA_6hr_0.12mg_mL",
         "PZA_6hr_1.2mg_mL",
         "EMB_6hr_10ug_mL",
-        "Rifampicin_6hr_0.2ug_mL"
+        "Rifampicin_6hr_0.2ug_mL",
     ]
 
     absolutePath = os.path.abspath(__file__)
@@ -34,10 +35,10 @@ def test_fileIO():
     )
     # check that pandas opened a file
     xls = pd.ExcelFile(path)
-    assert(isinstance(xls, pd.ExcelFile))
+    assert isinstance(xls, pd.ExcelFile)
 
     # check that it can read in sheets
     for s in sheets:
         data = pd.read_excel(xls, sheet_name=s)
         print(data)
-        assert(isinstance(data, pd.DataFrame))
+        assert isinstance(data, pd.DataFrame)
