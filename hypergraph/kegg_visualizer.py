@@ -7,6 +7,8 @@ from fileIO import read_KGML
 from kegg_network import KEGG_Network
 import helper_functions
 from networkx.drawing.nx_agraph import graphviz_layout
+from fileIO import readXLSX, read_cloneID_to_orf_table
+from drug_data import Drug_Data
 
 
 class KEGG_Visualizer:
@@ -40,7 +42,7 @@ class KEGG_Visualizer:
         dictionary to map KEGG ids to substrate names
     """
     
-    def __init__(self, network):
+    def __init__(self, network, clone_id_to_gene):
         """ Initializes a new KEGG_Visualizer object
         
         Parameters
@@ -49,7 +51,7 @@ class KEGG_Visualizer:
             Custom KEGG_Network object that holds summary information of KEGG network
         """
         self.network = network
-
+        self.clone_id_to_gene = clone_id_to_gene
         self.relation_df, self.relation_entry_to_name_dict = self.create_relation_df()
         self.relation_name_to_entry_dict = helper_functions.dictionary_reverser(self.relation_entry_to_name_dict)
         
@@ -58,6 +60,7 @@ class KEGG_Visualizer:
         self.reaction_id_to_name_dict = reac_id_dict
         self.substrate_id_to_name_dict = sub_id_dict
         self.product_id_to_name_dict = prod_id_dict
+        self.reaction_name_to_id_dict = helper_functions.dictionary_reverser(self.reaction_id_to_name_dict)
 
         self.expanded_reaction_df = self.expand_reaction_df(self.reaction_df)
 
@@ -360,11 +363,11 @@ class KEGG_Visualizer:
         # setting up the figure (to enable adding a title)
         plt.figure(figsize=(10, 5))
         ax = plt.gca()
-        ax.set_title(self.network.name)
-
+        # ax.set_title(self.network.name)
+        #ax.set_title('Central Carbon Metabolism - BDQ 1hr')
         # section for node position and size
         my_pos = graphviz_layout(self.reaction_graph, prog='neato')
-        my_node_size = 350
+        my_node_size = 400
         my_node_size_list = []
 
         # go through the nodes, if a node is a virtual hyper edge node
@@ -392,8 +395,10 @@ class KEGG_Visualizer:
         #         label_dict[node] = current_label
 
             # label_dict[node] = self.relation_entry_to_name_dict[node].split(" ")[0]
-
-        nx.draw(self.reaction_graph, node_size=my_node_size_list, pos=my_pos, with_labels=True, ax=ax)
+        if self.reaction_color_map is None:
+            nx.draw(self.reaction_graph, node_size=my_node_size_list, pos=my_pos, arrowsize=18, with_labels=True, ax=ax)
+        else:
+            nx.draw(self.reaction_graph, node_size=my_node_size_list, edge_color=self.reaction_color_map, pos=my_pos, arrowsize=18, with_labels=True, ax=ax)
 
         # helpful for debugging
         # nx.draw_networkx_edge_labels(self.reaction_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.reaction_graph, 'label'), clip_on=False, alpha=0.5)
@@ -477,6 +482,53 @@ class KEGG_Visualizer:
         TYPE
             Description
         """
+
+        # indices_of_network_genes_in_drug_data = helper_functions.extract_indices_from_pathway(drug_data, self.network)
+        # first col is the id_ref
+        up_reg_df = drug_data[drug_data.iloc[:, 1] >= 0.1]
+        down_reg_df = drug_data[drug_data.iloc[:, 1] <= -0.1]
+        # nan_reg_df = drug_data[drug_data.iloc[:, 1].isna()]
+        
+        regulation_dict = {}
+        for clone_id in up_reg_df.iloc[:, 0]:
+            regulation_dict[clone_id_to_gene[clone_id]] = 'up'
+        for clone_id in down_reg_df.iloc[:, 0]:
+            regulation_dict[clone_id_to_gene[clone_id]] = 'down'
+
+        #  print(regulation_dict)
+        # print(self.reaction_name_to_id_dict)
+        gene_to_reaction_name_dict = {}
+        for gene in self.network.genes:
+            for gene_name in gene.name.split(' '):
+                for reaction in gene.reaction.split(' '):
+                    gene_to_reaction_name_dict[gene_name[4:]] = reaction[3:] 
+        
+        reaction_name_to_gene_dict = helper_functions.dictionary_reverser(gene_to_reaction_name_dict)
+        # print(reaction_name_to_gene_dict)
+
+        # print(self.expanded_reaction_df)
+        df_edge_list = list(self.expanded_reaction_df.iloc[:, 1:3].itertuples(index=False, name=None))
+        colors = []
+        for edge in self.reaction_graph.edges:
+            index_of_edge_in_list = df_edge_list.index(edge)
+            reaction_id = self.expanded_reaction_df.iloc[index_of_edge_in_list, 0]
+            # print(edge)
+            # print(reaction_id)
+            reaction_name_with_prefix = self.reaction_id_to_name_dict[reaction_id]
+            reaction_name = reaction_name_with_prefix[3:]
+            # print(reaction_name)
+
+            genes = reaction_name_to_gene_dict.get(reaction_name)
+            
+            if regulation_dict.get(genes) == 'up':
+                colors.append('#a0e2a8')
+            elif regulation_dict.get(genes) == 'down':
+                colors.append('#d66969')
+            else:
+                colors.append('#b5b5b5')
+
+        self.reaction_color_map = colors
+            
         return None
 
 
@@ -485,18 +537,50 @@ if __name__ == '__main__':
     fileDirectory = os.path.dirname(absolutePath)
     parentDirectory = os.path.dirname(fileDirectory)
     path_drug_data = os.path.join(
-        parentDirectory, "input_files/Multidrug_6hr_Responses_trimmed.xlsx"
+        parentDirectory, "input_files/Multidrug_6hr_Responses.xlsx"
     )
 
     path_KEGG = os.path.join(parentDirectory, "input_files/KEGG_data/")
+    path_cloneID_ORF = os.path.join(parentDirectory, "input_files/clone_to_orf.csv")
+    cloneID_ORF = read_cloneID_to_orf_table(path_cloneID_ORF)
 
-    file_path = path_KEGG + "rn01200.xml"
+    clone_id_to_gene = {}
+    for i in range(0, cloneID_ORF.shape[0]):
+        clone = cloneID_ORF.iloc[i, 0]
+        gene = cloneID_ORF.iloc[i, 1]
+        
+        clone_id_to_gene[clone] = gene
+
+
+    file_path = path_KEGG + "mtu01200.xml"
 
     # we create a pathway object, then create a network object
     # Finally, make a KEGG_Visualizer object based on the network
     pathway_obj = read_KGML(file_path)
     network = KEGG_Network(pathway_obj)
 
-    net_vis = KEGG_Visualizer(network)
+    genes_to_reactions_dict = helper_functions.genes_to_reactions(network)
+    
+    # section for creating dictionaries that map
+    # kegg id to gene names
+    genes_to_node_id = {}
+    node_id_to_gene = {}
+    for entry in network.reaction_entries:
+        genes_to_node_id[entry.name] = entry.id
+        for name in entry.name.split(' '):
+            node_id_to_gene[entry.id] = name[4:]
 
+    excel = readXLSX(path_drug_data)
+    all_drug_data = Drug_Data(excel)
+
+    drug_data = all_drug_data.average_drug_table.iloc[:, [0, 10]]
+    # print(drug_data)
+    # print(network.gene_list)
+    net_vis = KEGG_Visualizer(network, clone_id_to_gene)
+
+    # print(net_vis.reaction_graph.edges)
+    net_vis.add_drug_data(drug_data, graph_type='reaction')
     net_vis.plot_graph(graph_type='reaction')
+
+    
+    
