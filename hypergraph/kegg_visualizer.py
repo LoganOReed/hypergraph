@@ -367,16 +367,19 @@ class KEGG_Visualizer:
         #ax.set_title('Central Carbon Metabolism - BDQ 1hr')
         # section for node position and size
         my_pos = graphviz_layout(self.reaction_graph, prog='neato')
-        my_node_size = 400
+        my_node_size = 300
         my_node_size_list = []
 
         # go through the nodes, if a node is a virtual hyper edge node
         # then we set the size to be very small
+        custom_node_colors = []
         for node in self.reaction_graph.nodes:
             if str(node)[0] == 'h':  # if we have a virtual hyperedge node
-                my_node_size_list.append(1)
+                my_node_size_list.append(20)
+                custom_node_colors.append('#000000')
             else:
                 my_node_size_list.append(my_node_size)
+                custom_node_colors.append('#1f78b4')
 
         # label_dict = {}
         # for node in self.relation_graph.nodes:
@@ -395,10 +398,13 @@ class KEGG_Visualizer:
         #         label_dict[node] = current_label
 
             # label_dict[node] = self.relation_entry_to_name_dict[node].split(" ")[0]
+        num_edges = len(self.reaction_graph.edges)
+        edge_size = 2
+        weights = [edge_size] * num_edges
         if self.reaction_color_map is None:
             nx.draw(self.reaction_graph, node_size=my_node_size_list, pos=my_pos, arrowsize=18, with_labels=True, ax=ax)
         else:
-            nx.draw(self.reaction_graph, node_size=my_node_size_list, edge_color=self.reaction_color_map, pos=my_pos, arrowsize=18, with_labels=True, ax=ax)
+            nx.draw(self.reaction_graph, node_size=my_node_size_list, node_color=custom_node_colors, edge_color=self.reaction_color_map, pos=my_pos, arrowsize=18, with_labels=False, width=list(weights), ax=ax)
 
         # helpful for debugging
         # nx.draw_networkx_edge_labels(self.reaction_graph, my_pos, font_size=7, edge_labels=nx.get_edge_attributes(self.reaction_graph, 'label'), clip_on=False, alpha=0.5)
