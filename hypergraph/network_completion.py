@@ -97,7 +97,7 @@ if __name__ == '__main__':
         
         clone_id_to_gene[clone] = gene
 
-    file_path = path_KEGG + "mtu01200.xml"
+    file_path = path_KEGG + "mtu00010.xml"
 
     # we create a pathway object, then create a network object
     # Finally, make a KEGG_Visualizer object based on the network
@@ -119,8 +119,19 @@ if __name__ == '__main__':
     edge_obj = net_vis.reaction_df
 
     net_comp = Network_Completion(network, edge_obj)
-
+    # expand the hyper edges wihtin the network
     expanded_df = net_vis.expand_reaction_df(net_comp.partial_complete_network)
+    # create a networkx graph based on expanded network
     G = net_vis.generate_reaction_graph(expanded_df)
+
+    paths = nx.all_simple_paths(G, -1, -2)
+    nodes_in_paths = set()
+    for path in paths:
+        nodes_in_paths.update(path)
+    print(nodes_in_paths)
+    for node in G.nodes:
+        if node not in nodes_in_paths:
+            print(node)
+
     nx.draw(G)
     plt.show()
