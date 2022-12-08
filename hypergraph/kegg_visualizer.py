@@ -497,9 +497,9 @@ class KEGG_Visualizer:
         
         regulation_dict = {}
         for clone_id in up_reg_df.iloc[:, 0]:
-            regulation_dict[clone_id_to_gene[clone_id]] = 'up'
+            regulation_dict[self.clone_id_to_gene[clone_id]] = 'up'
         for clone_id in down_reg_df.iloc[:, 0]:
-            regulation_dict[clone_id_to_gene[clone_id]] = 'down'
+            regulation_dict[self.clone_id_to_gene[clone_id]] = 'down'
 
         #  print(regulation_dict)
         # print(self.reaction_name_to_id_dict)
