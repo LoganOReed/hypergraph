@@ -11,13 +11,46 @@ import matplotlib.pyplot as plt
 
 class Network_Completion:
 
+    """Summary
+    
+    Attributes
+    ----------
+    edge_df : pandas DataFrame
+        dataframe that contains reactions/edges
+        includes: reac_id, subs, prods, type
+    edge_df_columns : pandas series
+        column names for the dataframe
+    network : KEGG_Network
+        network that we wish to complete
+    partial_complete_network : pandas DataFrame
+        edge dataframe with extra edges
+    """
+    
     def __init__(self, network, edge_df):
+        """Initializer for the Network_Completion class
+        
+        Parameters
+        ----------
+        network : KEGG_Network
+            network to be completed
+        edge_df : pandas DataFrame
+            dataframe that contains information about all edges
+            within the network
+        """
         self.network = network
         self.edge_df = edge_df
         self.edge_df_columns = self.edge_df.columns
         self.partial_complete_network = self.partial_complete_network()
 
     def partial_complete_network(self):
+        """Partially completes the network
+        
+        Returns
+        -------
+        pandas DataFrame
+            dataframe that contains extra required edges for the sources
+            and sinks into the network
+        """
         # get unique substrates
         substrate_set = set()
         for entry in self.edge_df.substrate:
@@ -123,15 +156,3 @@ if __name__ == '__main__':
     expanded_df = net_vis.expand_reaction_df(net_comp.partial_complete_network)
     # create a networkx graph based on expanded network
     G = net_vis.generate_reaction_graph(expanded_df)
-
-    paths = nx.all_simple_paths(G, -1, -2)
-    nodes_in_paths = set()
-    for path in paths:
-        nodes_in_paths.update(path)
-    print(nodes_in_paths)
-    for node in G.nodes:
-        if node not in nodes_in_paths:
-            print(node)
-
-    nx.draw(G)
-    plt.show()
