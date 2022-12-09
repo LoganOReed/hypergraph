@@ -78,7 +78,7 @@ class Determining_Uberedges:
         return well_id_in_network_list
 
     def generate_reaction_drug_effect_dict(self, drug_combo):
-        drug_table = drug_data.drug_table
+        drug_table = self.drug_data.drug_table
         gene_drug_effect_dict = {}
         # generate a dictionary that maps the drug effect to
         # to the well id to gene name (in tb)
