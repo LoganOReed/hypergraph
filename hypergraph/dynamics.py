@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     reac_drug_effect = determine_net_uber_edges.generate_reaction_drug_effect_dict(drug_combo)
 
-    print(reac_drug_effect)
+    # print(reac_drug_effect)
     # print(simple_completed_df)
 
     # create a mapping between the reaction name and the reaction id
@@ -115,10 +115,27 @@ if __name__ == '__main__':
         else:
             reaction_id_to_drug_effect[reac_id] = drug_effect
 
-    print(reaction_id_to_drug_effect)
+    # print(reaction_id_to_drug_effect)
 
     # we loose a couple....
     print(len(reac_drug_effect.keys()))  # 78
     print(len(reaction_id_to_drug_effect.keys()))  # 52
 
+    # add a row to the dataframe to label if a reaction is affected
+    # by an uberedge
+    is_uber_edge = []
+    # uber_edge_vals = []
+    for i in range(0, simple_completed_df.shape[0]):
+        reaction_id = simple_completed_df.iloc[i, 0]
+        if reaction_id in reaction_id_to_drug_effect.keys():
+            is_uber_edge.append(1)
+            # uber_edge_vals.append(reaction_id_to_drug_effect[reaction_id])
+        else:
+            is_uber_edge.append(0)
+            # uber_edge_vals.append(np.nan)
 
+    complete_with_uber_df = simple_completed_df
+    complete_with_uber_df["is_uber"] = is_uber_edge
+
+    print(complete_with_uber_df)
+        
