@@ -8,6 +8,11 @@ import helper_functions
 import os
 from determining_uberedges import Determining_Uberedges
 import numpy as np
+import time
+
+
+def f(x_list):
+    return min(x_list)
 
 
 if __name__ == '__main__':
@@ -139,3 +144,77 @@ if __name__ == '__main__':
 
     print(complete_with_uber_df)
         
+    # get the unique chemicals in the network
+    table_df = complete_with_uber_df
+    subs = table_df['substrate'].tolist()
+    prods = table_df['product'].tolist()
+    subs_expanded = [entry for sublist in subs for entry in sublist]
+    prods_expanded = [entry for sublist in prods for entry in sublist]
+
+    sub_set = set(subs_expanded)
+    prod_set = set(prods_expanded)
+    union_chems = sub_set.union(prod_set)
+    union_chems_list = list(union_chems)
+
+    # create a map from chem_id to the metabolite level var
+    chem_id_to_index = {}
+    counter = 0
+    for chem_id in union_chems_list:
+        chem_id_to_index[chem_id] = counter
+        counter += 1
+
+    num_metabolites = len(union_chems_list)
+    meta_vals = np.random.uniform(0.01, 1, num_metabolites)
+
+    start = time.time()
+    num_metabolites = len(union_chems_list)
+    s_mat = np.zeros((num_metabolites, 1))
+    # generate the entries for the S matrix
+    for i in range(0, table_df.shape[0]):  # shape[0] is number of reactions
+        subs = table_df.iloc[i, 1]
+        prods = table_df.iloc[i, 2]
+        is_uber = table_df.iloc[i, 4]
+        reac_id = table_df.iloc[i, 0]
+
+        building_col = np.zeros((num_metabolites, 1))
+
+        if is_uber == 1:
+            uber_val = reaction_id_to_drug_effect[reac_id]
+        else:
+            uber_val = 1
+
+        if len(subs) > 1 or len(prods) > 1:
+            is_hyper = True
+        else:
+            is_hyper = False
+
+        if is_hyper:
+            sub_index_values = [chem_id_to_index[sub] for sub in subs]
+            prod_index_values = [chem_id_to_index[prod] for prod in prods]
+            sub_meta_levels = [meta_vals[ind] for ind in sub_index_values]
+            expression = f(sub_meta_levels)
+
+            building_col[sub_index_values] = -1 * expression
+            building_col[prod_index_values] = expression
+        else:
+            if reac_id == -1:  # source
+                prod_index_values = [chem_id_to_index[prod] for prod in prods][0]
+                building_col[prod_index_values] = 1
+            elif reac_id == -2:  # sink
+                sub_index_values = [chem_id_to_index[sub] for sub in subs][0]
+                sub_meta_levels = meta_vals[sub_index_values]
+                building_col[sub_index_values] = -1 * sub_meta_levels
+            else:  # normal simple edge
+                sub_index_value = [chem_id_to_index[sub] for sub in subs][0]
+                prod_index_value = [chem_id_to_index[prod] for prod in prods][0]
+                
+                sub_meta_level = meta_vals[sub_index_value]
+                building_col[sub_index_value] = -1 * sub_meta_level
+                building_col[prod_index_value] = sub_meta_level
+
+        s_mat = np.append(s_mat, building_col, axis=1)
+
+    end = time.time()
+    print(s_mat)
+    print(end - start)
+    print(s_mat.shape)
