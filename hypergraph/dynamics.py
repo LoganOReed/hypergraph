@@ -166,7 +166,7 @@ if __name__ == '__main__':
     num_metabolites = len(union_chems_list)
     meta_vals = np.random.uniform(0.01, 1, num_metabolites)
 
-    start = time.time()
+    start1 = time.time()
     num_metabolites = len(union_chems_list)
     s_mat = np.zeros((num_metabolites, 1))
     # generate the entries for the S matrix
@@ -194,8 +194,8 @@ if __name__ == '__main__':
             sub_meta_levels = [meta_vals[ind] for ind in sub_index_values]
             expression = f(sub_meta_levels)
 
-            building_col[sub_index_values] = -1 * expression
-            building_col[prod_index_values] = expression
+            building_col[sub_index_values] = -1 * expression * uber_val
+            building_col[prod_index_values] = expression * uber_val
         else:
             if reac_id == -1:  # source
                 prod_index_values = [chem_id_to_index[prod] for prod in prods][0]
@@ -209,12 +209,20 @@ if __name__ == '__main__':
                 prod_index_value = [chem_id_to_index[prod] for prod in prods][0]
                 
                 sub_meta_level = meta_vals[sub_index_value]
-                building_col[sub_index_value] = -1 * sub_meta_level
-                building_col[prod_index_value] = sub_meta_level
+                building_col[sub_index_value] = -1 * sub_meta_level * uber_val
+                building_col[prod_index_value] = sub_meta_level * uber_val
 
         s_mat = np.append(s_mat, building_col, axis=1)
 
-    end = time.time()
-    print(s_mat)
-    print(end - start)
-    print(s_mat.shape)
+    end1 = time.time()
+    print(end1 - start1)
+
+    print("Time to iterate over array")
+    start2 = time.time()
+    accumulate = 0
+    for i in range(0, s_mat.shape[0]):
+        for j in range(0, s_mat.shape[1]):
+            accumulate += s_mat[i][j]
+
+    end2 = time.time()
+    print(end2 - start2)
